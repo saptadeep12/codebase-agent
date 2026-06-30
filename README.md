@@ -7,9 +7,11 @@ An AI-powered assistant that lets you query any GitHub repository or chat with y
 ## ✨ Features
 
 - **Codebase Q&A** — Point it at any public GitHub repo and ask questions about the code, architecture, or logic. Powered by a LangGraph ReAct agent with GitHub API tools.
-- **Document Chat** — Upload a PDF and have a conversation with it. Uses FAISS vector search and HuggingFace embeddings for accurate retrieval.
+- **Document Chat** — Upload a PDF and have a conversation with it. Uses FAISS vector search and hosted HuggingFace embeddings for accurate retrieval.
 - **Real-time Streaming** — Both agents stream responses token by token via SSE (Server-Sent Events).
 - **Conversation Memory** — Document chat sessions retain context across multiple questions.
+- **Rate Limiting** — Built-in request throttling to protect against abuse.
+- **File Size Limits** — PDF uploads capped at 10MB to prevent resource exhaustion.
 
 ---
 
@@ -19,8 +21,9 @@ An AI-powered assistant that lets you query any GitHub repository or chat with y
 |---|---|
 | Backend | FastAPI, Python 3.11 |
 | Agent | LangGraph, LangChain, Groq LLM |
-| RAG | FAISS, HuggingFace Sentence Transformers, PyPDF |
+| RAG | FAISS, HuggingFace Inference API (hosted embeddings), PyPDF |
 | Streaming | Server-Sent Events (SSE) |
+| Rate Limiting | SlowAPI |
 | Frontend | Vanilla HTML/CSS/JS, Marked.js |
 
 ---
@@ -36,7 +39,9 @@ codebase-agent/
 │   └── tools.py        # GitHub API tools
 ├── frontend/
 │   ├── index.html      # Codebase agent UI
-│   └── doc.html        # Document chat UI
+│   ├── index.js        # Codebase agent frontend logic
+│   ├── doc.html         # Document chat UI
+│   └── doc.js           # Document chat frontend logic
 ├── main.py             # Unified FastAPI app
 ├── requirements.txt
 └── .env                # API keys (never commit this)
@@ -73,7 +78,11 @@ Create a `.env` file in the root:
 
 ```
 GROQ_API_KEY=your_groq_api_key
+HF_API_KEY=your_huggingface_api_key
 ```
+
+- **Groq** — used for the LLM (chat completions)
+- **HuggingFace** — used for hosted embeddings (Document Chat / RAG)
 
 ### 5. Run the server
 
@@ -87,20 +96,21 @@ Open `http://localhost:8000` in your browser.
 
 ## 🌐 API Routes
 
-| Method | Route | Description |
-|---|---|---|
-| GET | `/` | Codebase agent UI |
-| GET | `/doc` | Document chat UI |
-| POST | `/ask` | Query a GitHub repo (SSE stream) |
-| POST | `/doc/upload` | Upload a PDF |
-| POST | `/doc/chat` | Chat with uploaded PDF (SSE stream) |
-| DELETE | `/doc/session/{id}` | Delete a PDF session |
+| Method | Route | Description | Rate Limit |
+|---|---|---|---|
+| GET | `/` | Codebase agent UI | — |
+| GET | `/doc` | Document chat UI | — |
+| POST | `/ask` | Query a GitHub repo (SSE stream) | 10/min |
+| POST | `/doc/upload` | Upload a PDF (max 10MB) | 5/min |
+| POST | `/doc/chat` | Chat with uploaded PDF (SSE stream) | 15/min |
+| DELETE | `/doc/session/{id}` | Delete a PDF session | — |
 
 ---
 
 ## 🔑 Getting API Keys
 
 - **Groq** — [console.groq.com](https://console.groq.com)
+- **HuggingFace** — [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) (enable "Make calls to Inference Providers" permission)
 
 ---
 
@@ -111,5 +121,18 @@ Open `http://localhost:8000` in your browser.
 3. Connect your repo and set:
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-4. Add `GROQ_API_KEY` in the Environment tab
+4. Add environment variables in the **Environment** tab:
+   ```
+   GROQ_API_KEY = your_groq_key
+   HF_API_KEY = your_huggingface_key
+   ```
 5. Deploy
+
+> **Note:** The free Render tier spins down after 15 minutes of inactivity. The first request after idle time may take 30-50 seconds to respond as the instance wakes up.
+
+---
+
+## ⚠️ Limitations
+
+- PDF sessions are stored in-memory and are lost on server restart or redeploy.
+- Free-tier Render instances have 512MB RAM — be mindful of dependency size if extending the project.

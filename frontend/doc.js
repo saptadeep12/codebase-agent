@@ -77,7 +77,15 @@ async function ask() {
   answerDiv.className = "answer";
   output.appendChild(answerDiv);
 
+  // ── Loading animation (shown until first token arrives) ──
+  const loaderDiv = document.createElement("div");
+  loaderDiv.className = "thinking-loader";
+  loaderDiv.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+  output.appendChild(loaderDiv);
+  output.scrollTop = output.scrollHeight;
+
   let rawTokens = "";
+  let firstTokenReceived = false;
 
   try {
     const res = await fetch("/doc/chat", {
@@ -87,6 +95,7 @@ async function ask() {
     });
 
     if (!res.ok) {
+      loaderDiv.remove();
       const err = await res.json();
       throw new Error(err.detail || "Request failed");
     }
@@ -109,6 +118,10 @@ async function ask() {
           const data = JSON.parse(line.slice(6));
 
           if (data.type === "token") {
+            if (!firstTokenReceived) {
+              firstTokenReceived = true;
+              loaderDiv.remove();
+            }
             rawTokens += data.content;
             answerDiv.innerHTML = marked.parse(rawTokens);
           } else if (data.type === "done") {
@@ -121,6 +134,7 @@ async function ask() {
       }
     }
   } catch (e) {
+    loaderDiv.remove();
     answerDiv.innerHTML += `<span class="error">Error: ${escapeHtml(e.message)}</span>`;
   } finally {
     isStreaming = false;
