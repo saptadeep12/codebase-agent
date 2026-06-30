@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
 from langchain.chains import ConversationalRetrievalChain
@@ -34,9 +34,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # ── Shared state ──────────────────\───────────────────────────────────────────
 sessions: dict = {}
-embeddings = HuggingFaceInferenceAPIEmbeddings(
-    api_key=os.getenv("HF_API_KEY"),
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
+embeddings = HuggingFaceEndpointEmbeddings(
+    model="sentence-transformers/all-MiniLM-L6-v2",
+    task="feature-extraction",
+    huggingfacehub_api_token=os.getenv("HF_API_KEY"),
 )
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
