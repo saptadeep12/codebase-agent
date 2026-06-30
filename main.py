@@ -19,6 +19,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain_core.messages import HumanMessage
 
 from agent.graph import agent
+from fastapi.staticfiles import StaticFiles
 
 # ── Config ───────────────────────────────────────────────────────────────────
 GROQ_API_KEY  = os.getenv("GROQ_API_KEY")
@@ -36,6 +37,7 @@ sessions: dict = {}
 embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 
 # ── Request / Response models ─────────────────────────────────────────────────
