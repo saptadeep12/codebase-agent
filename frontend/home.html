@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Codebase Agent</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --border:    #1e1e2e;
+      --purple:    #7c6af7;
+      --purple-dim:#7c6af720;
+      --green:     #98c379;
+      --orange:    #f7a26a;
+      --text:      #d4d4d8;
+      --muted:     #52525b;
+      --white:     #fafafa;
+    }
+
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 48px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+    .nav-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--purple); }
+    .nav-links { display: flex; gap: 12px; align-items: center; }
+    .nav-link {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--text); }
+    .nav-cta {
+      font-size: 13px;
+      color: var(--white);
+      background: var(--purple);
+      text-decoration: none;
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 100px 24px 72px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--purple);
+      border: 1px solid var(--purple);
+      border-radius: 20px;
+      padding: 4px 14px;
+      margin-bottom: 28px;
+      letter-spacing: 0.05em;
+    }
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--purple);
+    }
+    .hero p {
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 40px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      padding: 11px 24px;
+      background: var(--purple);
+      color: #fff;
+      border-radius: 7px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-secondary {
+      padding: 11px 24px;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      text-decoration: none;
+      font-size: 14px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--purple); color: var(--purple); }
+
+    /* ── Tools ── */
+    .tools {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 600px) { .tools { grid-template-columns: 1fr; } }
+
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      text-decoration: none;
+      display: block;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .tool-card:hover { border-color: var(--purple); transform: translateY(-2px); }
+    .tool-icon { font-size: 24px; margin-bottom: 14px; display: block; }
+    .tool-card h3 { font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 8px; }
+    .tool-card p { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
+    .tool-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--purple);
+      background: var(--purple-dim);
+      border-radius: 4px;
+      padding: 3px 8px;
+      margin-right: 6px;
+    }
+
+    /* ── Divider ── */
+    .section-label {
+      max-width: 860px;
+      margin: 0 auto 32px;
+      padding: 0 24px;
+    }
+    .section-label h2 {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .section-label .rule {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .section-label .rule hr {
+      flex: 1;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Guide cards ── */
+    .guide {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    @media (max-width: 600px) { .guide-grid { grid-template-columns: 1fr; } }
+
+    .guide-section h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .guide-section h3 .icon { font-size: 16px; }
+
+    .steps { display: flex; flex-direction: column; gap: 12px; }
+    .step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--purple);
+      background: var(--purple-dim);
+      border-radius: 4px;
+      padding: 3px 7px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-text {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .step-text strong { color: var(--text); font-weight: 500; }
+    .step-text code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--orange);
+      background: #1e1e1e;
+      border-radius: 3px;
+      padding: 1px 5px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-left {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a {
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--purple); }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <a href="/" class="nav-logo">codebase<span>.</span>agent</a>
+    <div class="nav-links">
+      <a href="https://github.com/specter2028/codebase-agent" target="_blank" class="nav-link">GitHub</a>
+      <a href="/agent" class="nav-cta">Open App →</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">AI-Powered Developer Tools</div>
+    <h1>Ask anything about<br>any <em>codebase</em> or document</h1>
+    <p>Query any public GitHub repository or chat with your PDF files using natural language. Powered by LangGraph agents and Groq, with real-time streaming responses.</p>
+    <div class="hero-actions">
+      <a href="/agent" class="btn-primary">🔍 Try Codebase Agent</a>
+      <a href="/doc" class="btn-secondary">📄 Try Doc Chat</a>
+    </div>
+  </section>
+
+  <!-- Tools -->
+  <div class="section-label">
+    <h2>Tools</h2>
+    <div class="rule"><hr></div>
+  </div>
+
+  <div class="tools">
+    <a href="/agent" class="tool-card">
+      <span class="tool-icon">🔍</span>
+      <h3>Codebase Agent</h3>
+      <p>Point it at any public GitHub repo and ask questions about code, architecture, or logic. The agent browses files and searches code autonomously.</p>
+      <span class="tool-tag">LangGraph</span>
+      <span class="tool-tag">ReAct Agent</span>
+      <span class="tool-tag">GitHub API</span>
+    </a>
+    <a href="/doc" class="tool-card">
+      <span class="tool-icon">📄</span>
+      <h3>Doc Chat</h3>
+      <p>Upload a PDF and have a conversation with it. Uses vector search to retrieve relevant context and answers strictly from the document.</p>
+      <span class="tool-tag">RAG</span>
+      <span class="tool-tag">FAISS</span>
+      <span class="tool-tag">HuggingFace</span>
+    </a>
+  </div>
+
+  <!-- User Guide -->
+  <div class="section-label">
+    <h2>How to use</h2>
+    <div class="rule"><hr></div>
+  </div>
+
+  <div class="guide">
+    <div class="guide-grid">
+
+      <div class="guide-section">
+        <h3><span class="icon">🔍</span> Codebase Agent</h3>
+        <div class="steps">
+          <div class="step">
+            <span class="step-num">01</span>
+            <div class="step-text"><strong>Enter a repo</strong> — type any public GitHub repo in <code>owner/repo</code> format, e.g. <code>fastapi/fastapi</code></div>
+          </div>
+          <div class="step">
+            <span class="step-num">02</span>
+            <div class="step-text"><strong>Ask your question</strong> — ask about architecture, specific files, how a feature works, or anything about the codebase</div>
+          </div>
+          <div class="step">
+            <span class="step-num">03</span>
+            <div class="step-text"><strong>Watch it work</strong> — the agent browses files and searches code in real time, streaming its answer as it goes</div>
+          </div>
+          <div class="step">
+            <span class="step-num">04</span>
+            <div class="step-text"><strong>Follow up</strong> — keep asking questions about the same repo without re-entering it</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guide-section">
+        <h3><span class="icon">📄</span> Doc Chat</h3>
+        <div class="steps">
+          <div class="step">
+            <span class="step-num">01</span>
+            <div class="step-text"><strong>Upload a PDF</strong> — drag and drop or click to upload. Max file size is <code>10MB</code></div>
+          </div>
+          <div class="step">
+            <span class="step-num">02</span>
+            <div class="step-text"><strong>Wait for indexing</strong> — the document is chunked and embedded, ready to search in a few seconds</div>
+          </div>
+          <div class="step">
+            <span class="step-num">03</span>
+            <div class="step-text"><strong>Ask questions</strong> — ask anything about the document. Answers come strictly from the PDF content</div>
+          </div>
+          <div class="step">
+            <span class="step-num">04</span>
+            <div class="step-text"><strong>Clear when done</strong> — hit <code>✕ clear</code> to remove the session and upload a new document</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-left">codebase.agent — built with FastAPI + LangGraph</div>
+    <div class="footer-links">
+      <a href="https://github.com/specter2028/codebase-agent" target="_blank">GitHub</a>
+      <a href="/agent">Codebase Agent</a>
+      <a href="/doc">Doc Chat</a>
+    </div>
+  </footer>
+
+</body>
+</html>
+  

@@ -72,7 +72,7 @@ class UploadResponse(BaseModel):
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-RAG_PROMPT = PromptTemplate(
+STRICT_RAG_PROMPT = PromptTemplate(
     template="""You are a document assistant. You must answer ONLY using the information contained in the context below, which was extracted from a user-uploaded PDF.
 
 Rules you must always follow:
@@ -114,7 +114,7 @@ def build_chain(vectorstore: FAISS) -> ConversationalRetrievalChain:
         memory=memory,
         return_source_documents=False,
         output_key="answer",
-        combine_docs_chain_kwargs={"prompt": RAG_PROMPT},
+        combine_docs_chain_kwargs={"prompt": STRICT_RAG_PROMPT},
     )
 
 
@@ -156,6 +156,10 @@ async def stream_answer(chain: ConversationalRetrievalChain, question: str) -> A
 # ── Routes: General ───────────────────────────────────────────────────────────
 @app.get("/")
 def root():
+    return FileResponse(BASE_DIR / "frontend" / "home.html")
+
+@app.get("/agent")
+def agent_page():
     return FileResponse(BASE_DIR / "frontend" / "index.html")
 
 @app.get("/doc")
