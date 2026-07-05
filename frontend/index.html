@@ -2,89 +2,282 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Codebase Agent</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: monospace; background: #0f0f0f; color: #e0e0e0; display: flex; flex-direction: column; height: 100vh; max-width: 860px; margin: 0 auto; padding: 24px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-shrink: 0; }
-    h1 { color: #7c6af7; font-size: 20px; }
-    .doc-btn { padding: 7px 16px; background: transparent; color: #7c6af7; border: 1px solid #7c6af7; border-radius: 6px; cursor: pointer; font-family: monospace; font-size: 13px; text-decoration: none; transition: background 0.2s; }
-    .doc-btn:hover { background: #7c6af722; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: black;
+      color: #e7e7e7;
+      min-height: 100vh;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .repo-bar { display: flex; gap: 8px; margin-bottom: 12px; flex-shrink: 0; }
-    .repo-bar input { flex: 1; padding: 8px 12px; background: #1e1e1e; border: 1px solid #333; color: #fff; border-radius: 6px; font-family: monospace; font-size: 13px; }
-    .repo-bar input::placeholder { color: #555; }
-    .repo-label { color: #555; font-size: 12px; align-self: center; white-space: nowrap; }
+    /* ── Background effects ── */
+    .image-gradient {
+      position: fixed;
+      top: 0;
+      right: 0;
+      opacity: 0.5;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .layer-blur {
+      height: 0;
+      width: 30rem;
+      position: fixed;
+      top: 20%;
+      right: 0;
+      box-shadow: 0 0 700px 15px white;
+      rotate: -30deg;
+      z-index: -1;
+      pointer-events: none;
+    }
 
-    #output { flex: 1; overflow-y: auto; padding: 12px 0; }
+    /* ── Header ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 5rem;
+      flex-shrink: 0;
+    }
+    header h1 {
+      font-size: 3rem;
+      font-weight: 300;
+      letter-spacing: 0.05em;
+    }
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+    }
+    nav a {
+      font-size: 1rem;
+      letter-spacing: 0.1rem;
+      transition: color 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+    nav a:hover { color: #a7a7a7; }
+    .btn-nav {
+      background-color: #a7a7a7;
+      color: black;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-nav:hover { background-color: white; }
 
-    .question-line { color: #7c6af7; margin-top: 20px; margin-bottom: 8px; font-size: 13px; }
-    .divider { border-top: 1px solid #222; margin: 8px 0; }
+    /* ── Main layout ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem 3rem;
+    }
 
-    .tool-badge { display: inline-block; background: #1e1e2e; border: 1px solid #444; border-radius: 4px; padding: 2px 8px; color: #f7a26a; font-size: 11px; margin: 2px 0; }
+    /* ── Repo bar ── */
+    .repo-bar {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      max-width: 540px;
+      margin-bottom: 10px;
+    }
+    .repo-label {
+      color: #444;
+      font-size: 0.9rem;
+      align-self: center;
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+    }
+    .repo-bar input {
+      flex: 1;
+      padding: 0.8rem 1.2rem;
+      background: #0d0d0d;
+      border: 1px solid #2a2a2a;
+      color: #e7e7e7;
+      border-radius: 50px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+    .repo-bar input::placeholder { color: #444; }
+    .repo-bar input:focus { outline: none; border-color: #a7a7a7; }
+
+    /* ── Output ── */
+    #output {
+      width: 100%;
+      max-width: 900px;
+      max-height: 500px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      padding: 4px 0;
+
+      /* Themed scrollbar */
+    scrollbar-width: thin;                     /* Firefox */
+    scrollbar-color: #444 transparent;         /* Firefox: thumb / track */
+  }
+
+  #output::-webkit-scrollbar {
+    width: 6px;                                /* Chrome/Brave/Edge */
+  }
+  #output::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #output::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 3px;
+  }
+  #output::-webkit-scrollbar-thumb:hover {
+    background-color: #666;
+  }
+
+
+    .question-line { color: #a7a7a7; margin-top: 16px; margin-bottom: 6px; font-size: 0.85rem; letter-spacing: 0.05em; }
+    .divider { border-top: 1px solid #1a1a1a; margin: 8px 0; }
+    .done-line { color: #333; font-size: 0.75rem; margin-top: 8px; display: block; }
+    .error { color: #f48771; font-size: 0.85rem; }
+
+    .tool-badge {
+      display: inline-block;
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      padding: 2px 8px;
+      color: #a7a7a7;
+      font-size: 0.75rem;
+      margin: 2px 0;
+    }
     .tool-done { color: #98c379; }
-    .tool-input { color: #555; font-size: 10px; margin-left: 6px; }
-    .error { color: #f48771; font-size: 13px; }
-    .done-line { color: #444; font-size: 11px; margin-top: 8px; display: block; }
+    .tool-input { color: #444; font-size: 0.7rem; margin-left: 6px; }
 
-    .answer { font-size: 13px; line-height: 1.8; color: #c8e6c9; margin-top: 6px; }
+    /* ── Answer markdown ── */
+    .answer { font-size: 0.9rem; line-height: 1.8; color: #c8c8c8; margin-top: 6px; }
     .answer p { margin-bottom: 10px; }
-    .answer h1, .answer h2, .answer h3 { color: #7c6af7; margin: 14px 0 6px; font-size: 14px; }
+    .answer h1, .answer h2, .answer h3 { color: #e7e7e7; margin: 14px 0 6px; font-size: 1rem; }
     .answer strong { color: #fff; }
     .answer em { color: #aaa; }
-    .answer code { background: #1e1e1e; border: 1px solid #333; border-radius: 3px; padding: 1px 5px; font-size: 12px; color: #f7a26a; }
-    .answer pre { background: #1e1e1e; border: 1px solid #333; border-radius: 6px; padding: 12px; overflow-x: auto; margin: 8px 0; }
-    .answer pre code { background: none; border: none; padding: 0; color: #c8e6c9; font-size: 12px; }
-    .answer table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 12px; }
-    .answer th { background: #1e1e2e; color: #7c6af7; padding: 6px 10px; border: 1px solid #333; text-align: left; }
-    .answer td { padding: 6px 10px; border: 1px solid #222; color: #e0e0e0; }
+    .answer code {
+      background: #111; border: 1px solid #2a2a2a;
+      border-radius: 3px; padding: 1px 5px;
+      font-size: 0.8rem; color: #ccc;
+    }
+    .answer pre {
+      background: #111; border: 1px solid #2a2a2a;
+      border-radius: 8px; padding: 12px;
+      overflow-x: auto; margin: 8px 0;
+    }
+    .answer pre code { background: none; border: none; padding: 0; color: #c8c8c8; }
     .answer ul, .answer ol { margin: 6px 0 10px 20px; }
     .answer li { margin-bottom: 4px; }
-    .answer a { color: #7c6af7; text-decoration: none; }
+    .answer table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 0.8rem; }
+    .answer th { background: #111; color: #e7e7e7; padding: 6px 10px; border: 1px solid #2a2a2a; text-align: left; }
+    .answer td { padding: 6px 10px; border: 1px solid #1a1a1a; }
+    .answer a { color: #a7a7a7; text-decoration: none; }
 
+    /* ── Thinking loader ── */
     .thinking-loader { display: flex; gap: 5px; align-items: center; padding: 14px 0 4px; }
     .thinking-loader .dot {
-      width: 7px; height: 7px; border-radius: 50%; background: #7c6af7;
+      width: 7px; height: 7px; border-radius: 50%; background: #a7a7a7;
       animation: bounce 1.2s infinite ease-in-out;
     }
     .thinking-loader .dot:nth-child(2) { animation-delay: 0.15s; }
     .thinking-loader .dot:nth-child(3) { animation-delay: 0.3s; }
     @keyframes bounce {
-      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
       30% { transform: translateY(-6px); opacity: 1; }
     }
 
-    .input-bar { display: flex; gap: 8px; margin-top: 12px; flex-shrink: 0; }
-    .input-bar input { flex: 1; padding: 10px 14px; background: #1e1e1e; border: 1px solid #333; color: #fff; border-radius: 6px; font-family: monospace; font-size: 14px; }
-    .input-bar input::placeholder { color: #555; }
-    .input-bar input:focus { outline: none; border-color: #7c6af7; }
-    .input-bar button { padding: 10px 20px; background: #7c6af7; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
-    .input-bar button:hover { background: #6a59e0; }
-    .input-bar button:disabled { background: #444; cursor: not-allowed; }
+    /* ── Input bar ── */
+    .input-bar {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      max-width: 540px;
+    }
+    .input-bar input {
+      flex: 1;
+      padding: 0.8rem 1.2rem;
+      background: #0d0d0d;
+      border: 1px solid #2a2a2a;
+      color: #e7e7e7;
+      border-radius: 50px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+    .input-bar input::placeholder { color: #444; }
+    .input-bar input:focus { outline: none; border-color: #a7a7a7; }
+    .input-bar button {
+      padding: 0.8rem 2rem;
+      background-color: #a7a7a7;
+      color: black;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 500;
+      font-family: inherit;
+      transition: background-color 0.3s;
+      white-space: nowrap;
+    }
+    .input-bar button:hover { background-color: white; }
+    .input-bar button:disabled { background-color: #2a2a2a; color: #555; cursor: not-allowed; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      header { padding: 1rem 0.5rem; }
+      header h1 { font-size: 2rem; }
+      nav { display: none; }
+    }
+    @media (max-width: 480px) {
+      header h1 { font-size: 1.5rem; }
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🔍 Codebase Agent</h1>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <a href="/" class="doc-btn" style="border-color:#333;color:#555;">← Home</a>
-      <a href="/doc" class="doc-btn">📄 Doc Chat →</a>
+
+  <img class="image-gradient" src="/static/gradient.png" alt="">
+  <div class="layer-blur"></div>
+
+  <header>
+    <h1>CODEBASE</h1>
+    <nav>
+      <a href="/">HOME</a>
+      <a href="/doc">SCRIBE</a>
+    </nav>
+    <a href="/" class="btn-nav">← HOME</a>
+  </header>
+
+  <main>
+
+    <div class="repo-bar">
+      <span class="repo-label">REPO</span>
+      <input id="repo" placeholder="owner/reponame — e.g. fastapi/fastapi" />
     </div>
-  </div>
 
-  <div class="repo-bar">
-    <span class="repo-label">Repo:</span>
-    <input id="repo" placeholder="owner/reponame — e.g. fastapi/fastapi" />
-  </div>
+    <div id="output"></div>
 
-  <div id="output"></div>
+    <div class="input-bar">
+      <input id="question" placeholder="Ask anything about the repo..." />
+      <button id="askBtn" onclick="ask()">Ask</button>
+    </div>
 
-  <div class="input-bar">
-    <input id="question" placeholder="Ask anything about the repo..." />
-    <button id="askBtn" onclick="ask()">Ask</button>
-  </div>
+  </main>
 
   <script src="/static/index.js"></script>
 </body>

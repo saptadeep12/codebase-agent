@@ -2,131 +2,308 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>Doc Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scribe — Doc Chat</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: monospace; background: #0f0f0f; color: #e0e0e0; display: flex; flex-direction: column; height: 100vh; max-width: 860px; margin: 0 auto; padding: 24px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-shrink: 0; }
-    h1 { color: #7c6af7; font-size: 20px; }
-    .nav-link { color: #555; font-size: 12px; text-decoration: none; border: 1px solid #333; border-radius: 4px; padding: 4px 10px; }
-    .nav-link:hover { color: #7c6af7; border-color: #7c6af7; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: black;
+      color: #e7e7e7;
+      min-height: 100vh;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+    }
 
+    /* ── Background effects ── */
+    .image-gradient {
+      position: fixed;
+      top: 0;
+      right: 0;
+      opacity: 0.5;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .layer-blur {
+      height: 0;
+      width: 30rem;
+      position: fixed;
+      top: 20%;
+      right: 0;
+      box-shadow: 0 0 700px 15px white;
+      rotate: -30deg;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 5rem;
+      flex-shrink: 0;
+    }
+    header h1 {
+      font-size: 3rem;
+      font-weight: 300;
+      letter-spacing: 0.05em;
+    }
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+    }
+    nav a {
+      font-size: 1rem;
+      letter-spacing: 0.1rem;
+      transition: color 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+    nav a:hover { color: #a7a7a7; }
+    .btn-nav {
+      background-color: #a7a7a7;
+      color: black;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-nav:hover { background-color: white; }
+
+    /* ── Main layout ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem 3rem;
+    }
+
+    /* ── Upload zone ── */
     #upload-zone {
+      width: 100%;
+      max-width: 540px;
       border: 1px dashed #333;
-      border-radius: 8px;
-      padding: 24px;
+      border-radius: 12px;
+      padding: 28px;
       text-align: center;
       cursor: pointer;
-      flex-shrink: 0;
       transition: border-color 0.2s, background 0.2s;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
-    #upload-zone:hover, #upload-zone.drag-over { border-color: #7c6af7; background: #12101f; }
-    #upload-zone.has-file { border-style: solid; border-color: #3a3560; background: #12101f; }
-    #upload-zone p { color: #555; font-size: 13px; }
-    #upload-zone .file-name { color: #7c6af7; font-size: 13px; margin-top: 4px; }
-    #upload-zone .hint { color: #444; font-size: 11px; margin-top: 4px; }
+    #upload-zone:hover, #upload-zone.drag-over {
+      border-color: #a7a7a7;
+      background: #0d0d0d;
+    }
+    #upload-zone.has-file {
+      border-style: solid;
+      border-color: #444;
+      background: #0d0d0d;
+    }
+    #upload-zone p { color: #555; font-size: 0.95rem; }
+    #upload-zone .file-name { color: #e7e7e7; font-size: 0.9rem; margin-top: 6px; }
+    #upload-zone .hint { color: #444; font-size: 0.8rem; margin-top: 4px; }
     #file-input { display: none; }
 
+    /* ── Status bar ── */
     #status-bar {
       display: none;
       align-items: center;
       gap: 8px;
-      margin-bottom: 12px;
-      padding: 8px 12px;
-      background: #1a1a2e;
-      border: 1px solid #2a2a4a;
-      border-radius: 6px;
-      font-size: 12px;
-      flex-shrink: 0;
+      width: 100%;
+      max-width: 540px;
+      margin-bottom: 10px;
+      padding: 8px 14px;
+      background: #0d0d0d;
+      border: 1px solid #222;
+      border-radius: 8px;
+      font-size: 0.8rem;
     }
     #status-bar.visible { display: flex; }
-    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #98c379; flex-shrink: 0; }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #98c379; flex-shrink: 0;
+    }
     .status-dot.loading { background: #f7a26a; animation: pulse 1s infinite; }
     @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
     #status-text { color: #aaa; flex: 1; }
-    #clear-btn { color: #555; font-size: 11px; cursor: pointer; border: none; background: none; font-family: monospace; }
+    #clear-btn {
+      color: #555; font-size: 0.75rem; cursor: pointer;
+      border: none; background: none;
+      font-family: inherit;
+      transition: color 0.2s;
+    }
     #clear-btn:hover { color: #f48771; }
 
-    #output { flex: 1; overflow-y: auto; padding: 4px 0; }
-    .question-line { color: #7c6af7; margin-top: 20px; margin-bottom: 6px; font-size: 13px; }
-    .divider { border-top: 1px solid #1a1a1a; margin: 8px 0; }
-    .done-line { color: #333; font-size: 11px; margin-top: 8px; display: block; }
-    .error { color: #f48771; font-size: 13px; }
+    /* ── Chat output ── */
+    #output {
+        width: 100%;
+        max-width: 900px;
+        max-height: 500px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+        padding: 4px 0;
 
-    .answer { font-size: 13px; line-height: 1.8; color: #c8e6c9; margin-top: 6px; }
+        /* Themed scrollbar */
+      scrollbar-width: thin;                     /* Firefox */
+      scrollbar-color: #444 transparent;         /* Firefox: thumb / track */
+    }
+
+    #output::-webkit-scrollbar {
+      width: 6px;                                /* Chrome/Brave/Edge */
+    }
+    #output::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #output::-webkit-scrollbar-thumb {
+      background-color: #444;
+      border-radius: 3px;
+    }
+    #output::-webkit-scrollbar-thumb:hover {
+      background-color: #666;
+    }
+    .question-line { color: #a7a7a7; margin-top: 16px; margin-bottom: 6px; font-size: 0.85rem; letter-spacing: 0.05em; }
+    .divider { border-top: 1px solid #1a1a1a; margin: 8px 0; }
+    .done-line { color: #333; font-size: 0.75rem; margin-top: 8px; display: block; }
+    .error { color: #f48771; font-size: 0.85rem; }
+
+    /* ── Answer markdown ── */
+    .answer { font-size: 0.9rem; line-height: 1.8; color: #c8c8c8; margin-top: 6px; }
     .answer p { margin-bottom: 10px; }
-    .answer h1, .answer h2, .answer h3 { color: #7c6af7; margin: 14px 0 6px; font-size: 14px; }
+    .answer h1, .answer h2, .answer h3 { color: #e7e7e7; margin: 14px 0 6px; font-size: 1rem; }
     .answer strong { color: #fff; }
     .answer em { color: #aaa; }
-    .answer code { background: #1e1e1e; border: 1px solid #333; border-radius: 3px; padding: 1px 5px; font-size: 12px; color: #f7a26a; }
-    .answer pre { background: #1e1e1e; border: 1px solid #333; border-radius: 6px; padding: 12px; overflow-x: auto; margin: 8px 0; }
-    .answer pre code { background: none; border: none; padding: 0; color: #c8e6c9; font-size: 12px; }
+    .answer code {
+      background: #111; border: 1px solid #2a2a2a;
+      border-radius: 3px; padding: 1px 5px;
+      font-size: 0.8rem; color: #ccc;
+    }
+    .answer pre {
+      background: #111; border: 1px solid #2a2a2a;
+      border-radius: 8px; padding: 12px;
+      overflow-x: auto; margin: 8px 0;
+    }
+    .answer pre code { background: none; border: none; padding: 0; color: #c8c8c8; }
     .answer ul, .answer ol { margin: 6px 0 10px 20px; }
     .answer li { margin-bottom: 4px; }
-    .answer table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 12px; }
-    .answer th { background: #1e1e2e; color: #7c6af7; padding: 6px 10px; border: 1px solid #333; text-align: left; }
-    .answer td { padding: 6px 10px; border: 1px solid #222; }
-    .answer a { color: #7c6af7; text-decoration: none; }
+    .answer table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 0.8rem; }
+    .answer th { background: #111; color: #e7e7e7; padding: 6px 10px; border: 1px solid #2a2a2a; text-align: left; }
+    .answer td { padding: 6px 10px; border: 1px solid #1a1a1a; }
+    .answer a { color: #a7a7a7; text-decoration: none; }
 
     /* ── Thinking loader ── */
     .thinking-loader { display: flex; gap: 5px; align-items: center; padding: 14px 0 4px; }
     .thinking-loader .dot {
-      width: 7px; height: 7px; border-radius: 50%; background: #7c6af7;
+      width: 7px; height: 7px; border-radius: 50%; background: #a7a7a7;
       animation: bounce 1.2s infinite ease-in-out;
     }
     .thinking-loader .dot:nth-child(2) { animation-delay: 0.15s; }
     .thinking-loader .dot:nth-child(3) { animation-delay: 0.3s; }
     @keyframes bounce {
-      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
       30% { transform: translateY(-6px); opacity: 1; }
     }
 
-    .input-bar { display: flex; gap: 8px; margin-top: 12px; flex-shrink: 0; }
+    /* ── Input bar ── */
+    .input-bar {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      max-width: 540px;
+    }
     .input-bar input {
-      flex: 1; padding: 10px 14px; background: #1e1e1e; border: 1px solid #333;
-      color: #fff; border-radius: 6px; font-family: monospace; font-size: 14px;
+      flex: 1;
+      padding: 0.8rem 1.2rem;
+      background: #0d0d0d;
+      border: 1px solid #2a2a2a;
+      color: #e7e7e7;
+      border-radius: 50px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
     }
-    .input-bar input::placeholder { color: #555; }
-    .input-bar input:focus { outline: none; border-color: #7c6af7; }
-    .input-bar input:disabled { opacity: 0.4; cursor: not-allowed; }
+    .input-bar input::placeholder { color: #444; }
+    .input-bar input:focus { outline: none; border-color: #a7a7a7; }
+    .input-bar input:disabled { opacity: 0.3; cursor: not-allowed; }
     .input-bar button {
-      padding: 10px 20px; background: #7c6af7; color: white; border: none;
-      border-radius: 6px; cursor: pointer; font-size: 14px; font-family: monospace;
+      padding: 0.8rem 2rem;
+      background-color: #a7a7a7;
+      color: black;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 500;
+      font-family: inherit;
+      transition: background-color 0.3s;
+      white-space: nowrap;
     }
-    .input-bar button:hover { background: #6a59e0; }
-    .input-bar button:disabled { background: #444; cursor: not-allowed; }
+    .input-bar button:hover { background-color: white; }
+    .input-bar button:disabled { background-color: #2a2a2a; color: #555; cursor: not-allowed; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      header { padding: 1rem 0.5rem; }
+      header h1 { font-size: 2rem; }
+      nav { display: none; }
+      .btn-nav { padding: 0.6rem 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      header h1 { font-size: 1.5rem; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>📄 Doc Chat</h1>
-    <a class="nav-link" href="/">← Home</a>
-  </div>
+  <img class="image-gradient" src="/static/gradient.png" alt="">
+  <div class="layer-blur"></div>
 
-  <div id="upload-zone" onclick="document.getElementById('file-input').click()"
-       ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
-    <p>Drop a PDF here or click to upload</p>
-    <div class="file-name" id="file-label"></div>
-    <div class="hint" id="upload-hint">Supports PDF files</div>
-  </div>
-  <input type="file" id="file-input" accept=".pdf" onchange="onFileSelected(event)" />
+  <header>
+    <h1>SCRIBE</h1>
+    <nav>
+      <a href="/">HOME</a>
+      <a href="/agent">CODEBASE</a>
+    </nav>
+    <a href="/agent" class="btn-nav">CODEBASE →</a>
+  </header>
 
-  <div id="status-bar">
-    <div class="status-dot" id="status-dot"></div>
-    <span id="status-text">Ready</span>
-    <button id="clear-btn" onclick="clearSession()">✕ clear</button>
-  </div>
+  <main>
 
-  <div id="output"></div>
+    <div id="upload-zone"
+         onclick="document.getElementById('file-input').click()"
+         ondragover="onDragOver(event)"
+         ondragleave="onDragLeave(event)"
+         ondrop="onDrop(event)">
+      <p>Drop a PDF here or click to upload</p>
+      <div class="file-name" id="file-label"></div>
+      <div class="hint" id="upload-hint">Supports PDF files · Max 10MB</div>
+    </div>
+    <input type="file" id="file-input" accept=".pdf" onchange="onFileSelected(event)" />
 
-  <div class="input-bar">
-    <input id="question" placeholder="Upload a PDF to start asking questions..." disabled />
-    <button id="askBtn" onclick="ask()" disabled>Ask</button>
-  </div>
+    <div id="status-bar">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Ready</span>
+      <button id="clear-btn" onclick="clearSession()">✕ clear</button>
+    </div>
+
+    <div id="output"></div>
+
+    <div class="input-bar">
+      <input id="question" placeholder="Upload a PDF to start asking questions..." disabled />
+      <button id="askBtn" onclick="ask()" disabled>Ask</button>
+    </div>
+
+  </main>
 
   <script src="/static/doc.js"></script>
 </body>
