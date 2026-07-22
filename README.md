@@ -1,3 +1,7 @@
+🔗 **Live Demo:** [https://codebase-agent.onrender.com/](https://codebase-agent.onrender.com/)
+
+---
+
 # 🔍 Codebase Agent
 
 An AI-powered assistant that lets you query any GitHub repository or chat with your PDF documents using natural language. Built with FastAPI and LangGraph, with real-time streaming responses.
@@ -29,24 +33,20 @@ An AI-powered assistant that lets you query any GitHub repository or chat with y
 ---
 
 ## 📁 Project Structure
-
-```
 codebase-agent/
 ├── agent/
-│   ├── __init__.py
-│   ├── graph.py        # LangGraph ReAct agent
-│   ├── state.py        # Agent state definition
-│   └── tools.py        # GitHub API tools
+│ ├── init.py
+│ ├── graph.py # LangGraph ReAct agent
+│ ├── state.py # Agent state definition
+│ └── tools.py # GitHub API tools
 ├── frontend/
-│   ├── index.html      # Codebase agent UI
-│   ├── index.js        # Codebase agent frontend logic
-│   ├── doc.html         # Document chat UI
-│   └── doc.js           # Document chat frontend logic
-├── main.py             # Unified FastAPI app
+│ ├── index.html # Codebase agent UI
+│ ├── index.js # Codebase agent frontend logic
+│ ├── doc.html # Document chat UI
+│ └── doc.js # Document chat frontend logic
+├── main.py # Unified FastAPI app
 ├── requirements.txt
-└── .env                # API keys (never commit this)
-```
-
+└── .env # API keys (never commit this)
 ---
 
 ## 🚀 Getting Started
@@ -76,10 +76,8 @@ pip install -r requirements.txt
 
 Create a `.env` file in the root:
 
-```
 GROQ_API_KEY=your_groq_api_key
 HF_API_KEY=your_huggingface_api_key
-```
 
 - **Groq** — used for the LLM (chat completions)
 - **HuggingFace** — used for hosted embeddings (Document Chat / RAG)
@@ -122,10 +120,8 @@ Open `http://localhost:8000` in your browser.
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
 4. Add environment variables in the **Environment** tab:
-   ```
-   GROQ_API_KEY = your_groq_key
-   HF_API_KEY = your_huggingface_key
-   ```
+GROQ_API_KEY = your_groq_key
+HF_API_KEY = your_huggingface_key
 5. Deploy
 
 > **Note:** The free Render tier spins down after 15 minutes of inactivity. The first request after idle time may take 30-50 seconds to respond as the instance wakes up.
