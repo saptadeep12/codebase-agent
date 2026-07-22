@@ -33,20 +33,23 @@ An AI-powered assistant that lets you query any GitHub repository or chat with y
 ---
 
 ## 📁 Project Structure
+
+```
 codebase-agent/
 ├── agent/
-│ ├── init.py
-│ ├── graph.py # LangGraph ReAct agent
-│ ├── state.py # Agent state definition
-│ └── tools.py # GitHub API tools
+│   ├── __init__.py
+│   ├── graph.py        # LangGraph ReAct agent
+│   ├── state.py         # Agent state definition
+│   └── tools.py         # GitHub API tools
 ├── frontend/
-│ ├── index.html # Codebase agent UI
-│ ├── index.js # Codebase agent frontend logic
-│ ├── doc.html # Document chat UI
-│ └── doc.js # Document chat frontend logic
-├── main.py # Unified FastAPI app
+│   ├── index.html       # Codebase agent UI
+│   ├── index.js         # Codebase agent frontend logic
+│   ├── doc.html          # Document chat UI
+│   └── doc.js            # Document chat frontend logic
+├── main.py              # Unified FastAPI app
 ├── requirements.txt
-└── .env # API keys (never commit this)
+└── .env                 # API keys (never commit this)
+```
 ---
 
 ## 🚀 Getting Started
