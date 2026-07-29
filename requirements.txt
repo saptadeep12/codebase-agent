@@ -1,4 +1,4 @@
-﻿fastapi==0.138.1
+fastapi==0.138.1
 uvicorn==0.49.0
 langchain==0.3.30
 langchain-community==0.3.31
